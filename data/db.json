@@ -6,6 +6,13 @@
       "email": "aisha@adu.ac.ae",
       "major": "Cloud Computing",
       "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "80b6003a-d51d-4635-b7b4-399986ac163d",
+      "name": "Fatima",
+      "email": "Fatima@adu.ac.ae",
+      "major": "IT",
+      "createdAt": "2026-02-03T14:27:41.870Z"
     }
   ],
   "employees": [
