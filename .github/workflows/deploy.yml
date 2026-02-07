@@ -22,13 +22,15 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --targets "Key=tag:App,Values=ITE501" \
             --comment "Deploy latest from GitHub" \
-            --parameters 'commands=[
-              "cd /home/ec2-user/app || exit 1",
-              "if [ ! -d .git ]; then git clone https://github.com/FatimaAbdelMagid/ITE501-Project.git .; fi",
-              "git fetch --all",
-              "git reset --hard origin/main",
-              "npm install",
-              "cp .env.example .env || true",
-              "pm2 start src/server.js --name ite501-api || pm2 restart ite501-api",
-              "pm2 save"
-            ]'
+            --parameters '{"commands":[
+              "set -e",
+              "sudo mkdir -p /home/ec2-user/app",
+              "sudo chown -R ec2-user:ec2-user /home/ec2-user/app || true",
+              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git config --global --add safe.directory /home/ec2-user/app\"",
+              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && if [ ! -d .git ]; then git clone https://github.com/FatimaAbdelMagid/ITE501-Project.git .; fi\"",
+              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git fetch --all\"",
+              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git reset --hard origin/master\"",
+              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && npm ci --omit=dev || npm install\"",
+              "sudo -u ec2-user bash -lc \"pm2 restart ite501-api || pm2 start src/server.js --name ite501-api\""
+            ]}'
+
