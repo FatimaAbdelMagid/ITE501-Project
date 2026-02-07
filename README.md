@@ -19,7 +19,7 @@ npm start
 
 API will run at: `http://localhost:3000`
 
-## For Authentication
+## For The Authentication
 Include header:
 - `x-api-key: <your API key>`
 
