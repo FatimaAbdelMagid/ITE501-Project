@@ -11,7 +11,9 @@ const employeeRoutes = require("./routes/employees");
 
 const app = express();
 // Serve frontend
-app.use(express.static(path.join(__dirname, "..", "public")));
+//app.use(express.static(path.join(__dirname, "..", "public")));
+app.use(express.static(path.join(process.cwd(), "public")));
+
 
 
 
