@@ -241,13 +241,14 @@
     <div class="gateCard">
       <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
         <div>
-          <h2 class="gateTitle">ITE501 API Tester</h2>
+          <h2 class="gateTitle">ITE501: API Tester</h2>
           <p class="gateDesc">
-            Enter a valid API key to unlock the tester. We will verify it using <b>GET /health</b>.
+            Enter a valid API key to unlock the tester.
           </p>
         </div>
         <div class="hint" title="Tip: base URL should be your ALB/instance URL">
-          🔐 Simple auth
+          🔐 Simple auth<br>
+          Fatima & Nayla
         </div>
       </div>
 
@@ -255,21 +256,23 @@
       <input id="gateBaseUrl" placeholder="https://your-alb-domain.com" value="http://localhost:3000" />
 
       <label for="gateApiKey">API Key (x-api-key)</label>
-      <input id="gateApiKey" placeholder="changeme-ite501" />
+      <input id="gateApiKey" type="password" placeholder="changeme-ite501" />
 
       <div class="row" style="margin-top:12px;">
         <button class="primary" type="button" onclick="login()">Login</button>
       </div>
 
       <div class="gateMsg" id="gateMsg">Tip: if you are using an ALB, base URL looks like <i>http(s)://xxxx.elb.amazonaws.com</i></div>
+      
     </div>
   </div>
 
   <div class="container">
     <header>
       <div>
-        <h1>ITE501 API Tester</h1>
+        <h1>ITE501: API Tester</h1>
         <p class="byline">Fatima Abdelmagid &amp; Nayla Alshamsi</p>
+        <p class="byline">Supervised By: Dr. Mohammad Taha Khan</p>
       </div>
 
       <div class="row">
@@ -290,7 +293,7 @@
           <input id="baseUrl" placeholder="https://your-alb-domain.com" value="http://localhost:3000" />
 
           <label for="apiKey">API Key (sent as x-api-key)</label>
-          <input id="apiKey" placeholder="changeme-ite501" />
+          <input id="apiKey" type="password" placeholder="changeme-ite501" />
 
           <div class="row" style="margin-top: 12px;">
             <button class="primary" type="button" onclick="health()">GET /health</button>
