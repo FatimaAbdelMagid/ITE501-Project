@@ -1,18 +1,18 @@
 {
   "students": [
     {
-      "id": "80b6003a-d51d-4635-b7b4-399986ac163d",
-      "name": "Fatima",
-      "email": "Fatima@adu.ac.ae",
-      "major": "IT",
-      "createdAt": "2026-02-03T14:27:41.870Z"
-    },
-    {
       "id": "6f98a876-3cab-4a64-83a3-2241e37ade24",
       "name": "Nayla",
       "email": "aisha@adu.ac.ae",
       "major": "Cloud Computing",
       "createdAt": "2026-02-10T07:21:18.687Z"
+    },
+    {
+      "id": "3f990f57-18f8-4e49-a7b6-730c6f928f6a",
+      "name": "Fatima Abdelmagid",
+      "email": "fatima.mohamed@adu.ac.ae",
+      "major": "ITE501",
+      "createdAt": "2026-02-10T09:27:25.639Z"
     }
   ],
   "employees": [

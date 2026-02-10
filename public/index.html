@@ -4,122 +4,429 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ITE501 API Tester (Students/Employees)</title>
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin: 12px 0; }
-    .card h2 { margin: 0 0 10px; font-size: 18px; }
-    label { display: block; font-weight: 600; margin: 8px 0 4px; }
-    input, select, textarea, button { padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
-    input, select, textarea { width: min(520px, 100%); }
-    textarea { min-height: 110px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    button { cursor: pointer; border: 1px solid #333; background: #111; color: #fff; }
-    button.secondary { background: #fff; color: #111; }
-    .small { color: #555; font-size: 13px; }
-    pre { background: #0b1020; color: #e6e6e6; padding: 12px; border-radius: 10px; overflow: auto; }
-    .status { font-weight: 700; }
+    :root{
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.12);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --muted2: rgba(255,255,255,0.55);
+      --good: #34d399;
+      --bad: #fb7185;
+      --warn: #fbbf24;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 16px;
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 15% 10%, rgba(59,130,246,0.25), transparent 60%),
+        radial-gradient(800px 520px at 85% 20%, rgba(168,85,247,0.20), transparent 60%),
+        radial-gradient(700px 500px at 40% 90%, rgba(34,197,94,0.15), transparent 60%),
+        var(--bg);
+      line-height: 1.45;
+    }
+
+    .container{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px 16px 34px;
+    }
+
+    header{
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    h1{ margin: 0; font-size: 22px; letter-spacing: 0.2px; }
+    .byline{ margin: 0; font-size: 13px; color: var(--muted); }
+
+    /* Layout: left "controls" + right "output" */
+    .app{
+      display: grid;
+      grid-template-columns: minmax(320px, 520px) 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 980px){
+      .app{ grid-template-columns: 1fr; }
+      .outputPanel{ position: static; top: auto; }
+    }
+
+    .stack{ display: grid; gap: 12px; }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .card h2{
+      margin: 0 0 10px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: rgba(255,255,255,0.92);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .hint{ font-size: 12px; color: var(--muted2); font-weight: 600; }
+
+    label{ display:block; margin: 10px 0 6px; font-size: 12px; color: var(--muted); font-weight: 650; }
+    input, select, textarea{
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      outline: none;
+    }
+    input::placeholder, textarea::placeholder{ color: rgba(255,255,255,0.35); }
+    textarea{
+      min-height: 112px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      resize: vertical;
+    }
+
+    .row{ display:flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row > *{ flex: 0 0 auto; }
+    .row .grow{ flex: 1 1 auto; min-width: 220px; }
+
+    button{
+      cursor: pointer;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.10);
+      color: var(--text);
+      font-weight: 650;
+      letter-spacing: 0.2px;
+      transition: transform 0.02s ease, background 0.15s ease, border 0.15s ease;
+    }
+    button:hover{ background: rgba(255,255,255,0.14); }
+    button:active{ transform: translateY(1px); }
+    button.primary{
+      background: rgba(59,130,246,0.25);
+      border-color: rgba(59,130,246,0.35);
+    }
+    button.primary:hover{ background: rgba(59,130,246,0.32); }
+    button.danger{
+      background: rgba(251,113,133,0.16);
+      border-color: rgba(251,113,133,0.30);
+    }
+    button.ghost{
+      background: transparent;
+      border-color: rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* Output panel */
+    .outputPanel{
+      position: sticky;
+      top: 14px;
+      align-self: start;
+    }
+    .statusRow{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .statusPill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .dot{ width: 8px; height: 8px; border-radius: 50%; background: var(--muted2); }
+    .dot.good{ background: var(--good); }
+    .dot.bad{ background: var(--bad); }
+    .dot.warn{ background: var(--warn); }
+
+    pre{
+      margin: 0;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.35);
+      overflow: auto;
+      min-height: 340px;
+      max-height: calc(100vh - 170px);
+      color: rgba(255,255,255,0.92);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .divider{
+      height: 1px;
+      background: rgba(255,255,255,0.10);
+      margin: 12px 0;
+    }
+
+    /* Gate (login) */
+    .gate{
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(10px);
+      z-index: 50;
+    }
+    .gate.hidden{ display: none; }
+    .gateCard{
+      width: min(520px, 100%);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .gateTitle{
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .gateDesc{
+      margin: 0 0 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .gateMsg{
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .gateMsg.bad{ color: #fecdd3; }
+    .gateMsg.good{ color: #bbf7d0; }
+
+    /* Disabled mode for app until auth */
+    .locked{
+      opacity: 0.45;
+      filter: saturate(0.7);
+      pointer-events: none;
+      user-select: none;
+    }
   </style>
 </head>
+
 <body>
-  <h1>ITE501 API Tester</h1>
-  <p class="small">
-    Fatima Abdelmagid & Nayla Alshamsi 
-  </p>
+  <!-- LOGIN / API-KEY GATE -->
+  <div class="gate" id="gate">
+    <div class="gateCard">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+        <div>
+          <h2 class="gateTitle">ITE501 API Tester</h2>
+          <p class="gateDesc">
+            Enter a valid API key to unlock the tester. We will verify it using <b>GET /health</b>.
+          </p>
+        </div>
+        <div class="hint" title="Tip: base URL should be your ALB/instance URL">
+          🔐 Simple auth
+        </div>
+      </div>
 
-  <div class="card">
-    <h2>Connection</h2>
+      <label for="gateBaseUrl">Base URL</label>
+      <input id="gateBaseUrl" placeholder="https://your-alb-domain.com" value="http://localhost:3000" />
 
-    <label for="baseUrl">Base URL (your API)</label>
-    <input id="baseUrl" placeholder="https://your-alb-domain.com" value="http://localhost:3000" />
+      <label for="gateApiKey">API Key (x-api-key)</label>
+      <input id="gateApiKey" placeholder="changeme-ite501" />
 
-    <label for="apiKey">API Key (sent as x-api-key)</label>
-    <input id="apiKey" placeholder="changeme-ite501" value="changeme-ite501" />
+      <div class="row" style="margin-top:12px;">
+        <button class="primary" type="button" onclick="login()">Login</button>
+      </div>
 
-    <div class="row" style="margin-top: 10px;">
-      <button type="button" onclick="health()">GET /health</button>
-      <button class="secondary" onclick="clearOutput()">Clear Output</button>
-    </div>
-  </div>
-  <div class="card">
-  <h2>Output</h2>
-  <div class="small">Status: <span class="status" id="status">—</span></div>
-  <pre id="output">{}</pre>
-</div>
-
-
-  <div class="card">
-    <h2>Quick Request Builder</h2>
-
-    <label for="method">Method</label>
-    <select id="method">
-      <option>GET</option>
-      <option>POST</option>
-      <option>PUT</option>
-      <option>DELETE</option>
-    </select>
-
-    <label for="path">Path</label>
-    <input id="path" placeholder="/api/students" value="/api/students" />
-
-    <label for="body">JSON Body (for POST/PUT)</label>
-    <textarea id="body" spellcheck="false">{"name":"Aisha","email":"aisha@adu.ac.ae","major":"Cloud Computing"}</textarea>
-
-    <div class="row" style="margin-top: 10px;">
-      <button onclick="sendCustom()">Send</button>
+      <div class="gateMsg" id="gateMsg">Tip: if you are using an ALB, base URL looks like <i>http(s)://xxxx.elb.amazonaws.com</i></div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Students</h2>
-    <div class="row">
-      <button onclick="listItems('students')">GET /api/students</button>
-      <button onclick="createStudent()">POST /api/students</button>
-      <button onclick="updateStudent()">PUT /api/students/:id</button>
-      <button onclick="deleteItem('students')">DELETE /api/students/:id</button>
+  <div class="container">
+    <header>
+      <div>
+        <h1>ITE501 API Tester</h1>
+        <p class="byline">Fatima Abdelmagid &amp; Nayla Alshamsi</p>
+      </div>
+
+      <div class="row">
+        <button class="ghost" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="app">
+      <!-- LEFT: CARDS / CONTROLS -->
+      <div class="stack" id="controls">
+        <div class="card">
+          <h2>
+            Connection
+            <span class="hint">Required</span>
+          </h2>
+
+          <label for="baseUrl">Base URL (your API)</label>
+          <input id="baseUrl" placeholder="https://your-alb-domain.com" value="http://localhost:3000" />
+
+          <label for="apiKey">API Key (sent as x-api-key)</label>
+          <input id="apiKey" placeholder="changeme-ite501" />
+
+          <div class="row" style="margin-top: 12px;">
+            <button class="primary" type="button" onclick="health()">GET /health</button>
+            <button class="ghost" type="button" onclick="clearOutput()">Clear Output</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="row">
+            <button class="danger" type="button" onclick="logout()">Reset / Logout</button>
+            <span class="hint">Clears saved key</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Quick Request Builder <span class="hint">Any endpoint</span></h2>
+
+          <div class="row">
+            <div class="grow">
+              <label for="method">Method</label>
+              <select id="method">
+                <option>GET</option>
+                <option>POST</option>
+                <option>PUT</option>
+                <option>DELETE</option>
+              </select>
+            </div>
+            <div class="grow">
+              <label for="path">Path</label>
+              <input id="path" placeholder="/api/students" value="/api/students" />
+            </div>
+          </div>
+
+          <label for="body">JSON Body (POST/PUT)</label>
+          <textarea id="body" spellcheck="false">{"name":"Aisha","email":"aisha@adu.ac.ae","major":"Cloud Computing"}</textarea>
+
+          <div class="row" style="margin-top: 12px;">
+            <button class="primary" onclick="sendCustom()">Send</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Students <span class="hint">/api/students</span></h2>
+          <div class="row">
+            <button onclick="listItems('students')">GET</button>
+            <button onclick="createStudent()">POST</button>
+            <button onclick="updateStudent()">PUT :id</button>
+            <button onclick="deleteItem('students')">DELETE :id</button>
+            <button class="ghost" onclick="getById('students')">GET :id</button>
+          </div>
+
+          <label for="studentId">Student ID (for :id)</label>
+          <input id="studentId" placeholder="e.g. 1" />
+
+          <label for="studentPayload">Student JSON (POST/PUT)</label>
+          <textarea id="studentPayload" spellcheck="false">{"name":"Aisha","email":"aisha@adu.ac.ae","major":"Cloud Computing"}</textarea>
+        </div>
+
+        <div class="card">
+          <h2>Employees <span class="hint">/api/employees</span></h2>
+          <div class="row">
+            <button onclick="listItems('employees')">GET</button>
+            <button onclick="createEmployee()">POST</button>
+            <button onclick="updateEmployee()">PUT :id</button>
+            <button onclick="deleteItem('employees')">DELETE :id</button>
+            <button class="ghost" onclick="getById('employees')">GET :id</button>
+          </div>
+
+          <label for="employeeId">Employee ID (for :id)</label>
+          <input id="employeeId" placeholder="e.g. 1" />
+
+          <label for="employeePayload">Employee JSON (POST/PUT)</label>
+          <textarea id="employeePayload" spellcheck="false">{"name":"Omar","email":"omar@adu.ac.ae","department":"IT"}</textarea>
+        </div>
+      </div>
+
+      <!-- RIGHT: OUTPUT -->
+      <div class="card outputPanel">
+        <h2>
+          Output
+          <span class="hint">Responses</span>
+        </h2>
+
+        <div class="statusRow">
+          <div class="statusPill">
+            <span class="dot" id="statusDot"></span>
+            <span id="status">LOCKED</span>
+          </div>
+          <div class="row">
+            <button class="ghost" onclick="copyOutput()">Copy</button>
+          </div>
+        </div>
+
+        <pre id="output">{ "message": "Login with your API key to begin." }</pre>
+      </div>
     </div>
-
-    <label for="studentId">Student ID (for get/update/delete)</label>
-    <input id="studentId" placeholder="e.g. 1" />
-
-    <div class="row" style="margin-top: 8px;">
-      <button class="secondary" onclick="getById('students')">GET /api/students/:id</button>
-    </div>
-
-    <label for="studentPayload">Student JSON (POST/PUT)</label>
-    <textarea id="studentPayload" spellcheck="false">
-{"name":"Aisha","email":"aisha@adu.ac.ae","major":"Cloud Computing"}
-    </textarea>
   </div>
-
-  <div class="card">
-    <h2>Employees</h2>
-    <div class="row">
-      <button onclick="listItems('employees')">GET /api/employees</button>
-      <button onclick="createEmployee()">POST /api/employees</button>
-      <button onclick="updateEmployee()">PUT /api/employees/:id</button>
-      <button onclick="deleteItem('employees')">DELETE /api/employees/:id</button>
-    </div>
-
-    <label for="employeeId">Employee ID (for get/update/delete)</label>
-    <input id="employeeId" placeholder="e.g. 1" />
-
-    <div class="row" style="margin-top: 8px;">
-      <button class="secondary" onclick="getById('employees')">GET /api/employees/:id</button>
-    </div>
-
-    <label for="employeePayload">Employee JSON (POST/PUT)</label>
-    <textarea id="employeePayload" spellcheck="false">
-{"name":"Omar","email":"omar@adu.ac.ae","department":"IT"}
-    </textarea>
-  </div>
-
-
 
 <script>
+  // ---------------------------
+  // State + helpers
+  // ---------------------------
+  function normalizeBaseUrl(u){
+    return (u || "").trim().replace(/\/+$/, "");
+  }
+
   function getConfig() {
-    const baseUrl = document.getElementById('baseUrl').value.trim().replace(/\/+$/, "");
+    const baseUrl = normalizeBaseUrl(document.getElementById('baseUrl').value);
     const apiKey = document.getElementById('apiKey').value.trim();
     return { baseUrl, apiKey };
+  }
+
+  function setDot(status){
+    const dot = document.getElementById("statusDot");
+    dot.classList.remove("good","bad","warn");
+    if (typeof status === "number") {
+      if (status >= 200 && status < 300) dot.classList.add("good");
+      else if (status >= 400) dot.classList.add("bad");
+      else dot.classList.add("warn");
+    } else {
+      const s = String(status || "").toUpperCase();
+      if (s.includes("READY") || s.includes("OK") || s.includes("LOGGED")) dot.classList.add("good");
+      else if (s.includes("ERROR") || s.includes("DENIED") || s.includes("UNAUTHORIZED") || s.includes("FORBIDDEN")) dot.classList.add("bad");
+      else dot.classList.add("warn");
+    }
+  }
+
+  function setOutput(status, data) {
+    const statusEl = document.getElementById('status');
+    const outputEl = document.getElementById('output');
+    statusEl.textContent = status;
+    setDot(status);
+    outputEl.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+  }
+
+  function clearOutput() {
+    setOutput("—", {});
   }
 
   async function apiFetch(path, { method="GET", body=null } = {}) {
@@ -140,7 +447,7 @@
 
     try {
       const res = await fetch(url, opts);
-      const text = await res.text(); // handles JSON or plain text
+      const text = await res.text();
       let data;
       try { data = text ? JSON.parse(text) : null; } catch { data = text; }
 
@@ -152,31 +459,92 @@
     }
   }
 
-  function setOutput(status, data) {
-  const statusEl = document.getElementById('status');
-  const outputEl = document.getElementById('output');
-
-  // If the Output section is missing, show an alert so it's obvious
-  if (!statusEl || !outputEl) {
-    alert("Output area not found. Please add elements with id='status' and id='output'.");
-    return;
+  // ---------------------------
+  // Auth gate: verify via GET /health
+  // ---------------------------
+  function lockUI(){
+    document.getElementById("controls").classList.add("locked");
+    document.getElementById("status").textContent = "LOCKED";
+    setDot("LOCKED");
   }
 
-  statusEl.textContent = status;
-  outputEl.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-}
-
-
-  function clearOutput() {
-    setOutput("—", {});
+  function unlockUI(){
+    document.getElementById("controls").classList.remove("locked");
+    document.getElementById("gate").classList.add("hidden");
+    setOutput("LOGGED IN", { message: "Authentication succeeded. You can now use the API tester." });
   }
 
-  // ---- Health ----
+  async function login(){
+    const baseUrl = normalizeBaseUrl(document.getElementById("gateBaseUrl").value);
+    const apiKey = document.getElementById("gateApiKey").value.trim();
+
+    const msg = document.getElementById("gateMsg");
+    msg.classList.remove("bad","good");
+    msg.textContent = "Checking /health ...";
+
+    if (!baseUrl) {
+      msg.classList.add("bad");
+      msg.textContent = "Please enter Base URL.";
+      return;
+    }
+    if (!apiKey) {
+      msg.classList.add("bad");
+      msg.textContent = "Please enter API key.";
+      return;
+    }
+
+    // Copy gate values into the main config fields
+    document.getElementById("baseUrl").value = baseUrl;
+    document.getElementById("apiKey").value = apiKey;
+    //verify the authentication
+    const result = await apiFetch("/api/students", { method: "GET" });
+
+
+
+    // Decide auth based on HTTP status.
+    // Typical patterns:
+    // 200 OK => allow
+    // 401/403 => deny
+    if (result.status === 200) {
+      // Save for current tab session (not permanent)
+      sessionStorage.setItem("ITE501_BASE_URL", baseUrl);
+      sessionStorage.setItem("ITE501_API_KEY", apiKey);
+
+      msg.classList.add("good");
+      msg.textContent = "Success! Unlocking...";
+      unlockUI();
+    } else if (result.status === 401 || result.status === 403) {
+      msg.classList.add("bad");
+      msg.textContent = "Invalid API key (Unauthorized). Please try again.";
+      lockUI();
+      document.getElementById("gateApiKey").focus();
+    } else {
+      // Could be network error, 404, 500, etc.
+      msg.classList.add("bad");
+      msg.textContent = "Could not verify. Check Base URL, /health route, and networking (ALB, security group, etc.).";
+      // Keep gate open
+      lockUI();
+    }
+  }
+
+
+  function logout(){
+    sessionStorage.removeItem("ITE501_BASE_URL");
+    sessionStorage.removeItem("ITE501_API_KEY");
+    document.getElementById("apiKey").value = "";
+    document.getElementById("gateApiKey").value = "";
+    document.getElementById("gate").classList.remove("hidden");
+    lockUI();
+    setOutput("LOCKED", { message: "Logged out. Enter API key to continue." });
+  }
+
+  // ---------------------------
+  // Endpoints
+  // ---------------------------
   function health() {
     return apiFetch("/health", { method: "GET" });
   }
 
-  // ---- Generic helpers ----
   function listItems(type) {
     return apiFetch(`/api/${type}`, { method: "GET" });
   }
@@ -199,13 +567,11 @@
     return apiFetch(`/api/${type}/${encodeURIComponent(id)}`, { method: "DELETE" });
   }
 
-  // ---- Students CRUD ----
   function createStudent() {
     const raw = document.getElementById("studentPayload").value.trim();
     let body;
     try { body = JSON.parse(raw); }
     catch { return setOutput("JSON ERROR", "Student JSON is invalid."); }
-
     return apiFetch("/api/students", { method: "POST", body });
   }
 
@@ -217,17 +583,14 @@
     let body;
     try { body = JSON.parse(raw); }
     catch { return setOutput("JSON ERROR", "Student JSON is invalid."); }
-
     return apiFetch(`/api/students/${encodeURIComponent(id)}`, { method: "PUT", body });
   }
 
-  // ---- Employees CRUD ----
   function createEmployee() {
     const raw = document.getElementById("employeePayload").value.trim();
     let body;
     try { body = JSON.parse(raw); }
     catch { return setOutput("JSON ERROR", "Employee JSON is invalid."); }
-
     return apiFetch("/api/employees", { method: "POST", body });
   }
 
@@ -239,11 +602,9 @@
     let body;
     try { body = JSON.parse(raw); }
     catch { return setOutput("JSON ERROR", "Employee JSON is invalid."); }
-
     return apiFetch(`/api/employees/${encodeURIComponent(id)}`, { method: "PUT", body });
   }
 
-  // ---- Custom request ----
   function sendCustom() {
     const method = document.getElementById("method").value;
     let path = document.getElementById("path").value.trim();
@@ -260,10 +621,35 @@
 
     return apiFetch(path, { method, body });
   }
- window.addEventListener("load", () => {
-  setOutput("READY", { message: "Page loaded and JS can update Output" });
-});
 
+  async function copyOutput(){
+    const text = document.getElementById("output").textContent || "";
+    try{
+      await navigator.clipboard.writeText(text);
+      setOutput("COPIED", { message: "Output copied to clipboard." });
+    } catch(e){
+      setOutput("COPY ERROR", String(e));
+    }
+  }
+
+  // ---------------------------
+  // Init
+  // ---------------------------
+  window.addEventListener("load", () => {
+    // Lock controls until login
+    lockUI();
+
+    // If there's a saved session, prefill the gate and prompt user to verify
+    const baseUrl = sessionStorage.getItem("ITE501_BASE_URL");
+    const apiKey = sessionStorage.getItem("ITE501_API_KEY");
+
+    if (baseUrl) document.getElementById("gateBaseUrl").value = baseUrl;
+    if (apiKey) document.getElementById("gateApiKey").value = apiKey;
+
+    if (baseUrl && apiKey){
+      document.getElementById("gateMsg").textContent = "Saved session found. Click Login to verify and unlock.";
+    }
+  });
 </script>
 </body>
 </html>
