@@ -14,23 +14,33 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
-
+      
       - name: Deploy to EC2 instances in ASG using SSM
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --targets "Key=tag:App,Values=ITE501" \
             --comment "Deploy latest from GitHub" \
-            --parameters '{"commands":[
-              "set -e",
-              "sudo mkdir -p /home/ec2-user/app",
-              "sudo chown -R ec2-user:ec2-user /home/ec2-user/app || true",
-              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git config --global --add safe.directory /home/ec2-user/app\"",
-              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && if [ ! -d .git ]; then git clone https://github.com/FatimaAbdelMagid/ITE501-Project.git .; fi\"",
-              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git fetch --all\"",
-              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git reset --hard origin/master\"",
-              "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && npm ci --omit=dev || npm install\"",
-              "sudo -u ec2-user bash -lc \"pm2 restart ite501-api || pm2 start src/server.js --name ite501-api\""
-            ]}'
+            --parameters '{
+              "commands": [
+                "set -e",
+
+                "sudo mkdir -p /home/ec2-user/app",
+                "sudo chown -R ec2-user:ec2-user /home/ec2-user/app || true",
+
+                "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git config --global --add safe.directory /home/ec2-user/app\"",
+
+                "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && if [ ! -d .git ]; then git clone https://github.com/FatimaAbdelMagid/ITE501-Project.git .; fi\"",
+                "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git fetch --all\"",
+                "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && git reset --hard origin/master\"",
+
+                "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && npm ci --omit=dev || npm install\"",
+
+                "sudo -u ec2-user bash -lc \"command -v pm2 >/dev/null 2>&1 || npm i -g pm2\"",
+
+                "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && pm2 start src/server.js --name ite501-api --update-env || pm2 restart ite501-api --update-env\"",
+
+                "sudo -u ec2-user bash -lc \"pm2 save\""
+              ]
+            }'
 

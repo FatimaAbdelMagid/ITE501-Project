@@ -11,12 +11,11 @@ const employeeRoutes = require("./routes/employees");
 
 const app = express();
 // Serve frontend
-//app.use(express.static(path.join(__dirname, "..", "public")));
-app.use(express.static(path.join(process.cwd(), "public")));
-
+app.use(express.static(path.join(__dirname, "..", "public")));
 app.get("/", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "public", "index.html"));
+  res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
+
 
 
 app.use(express.json({ limit: "1mb" }));
