@@ -38,9 +38,13 @@ jobs:
 
                 "sudo -u ec2-user bash -lc \"command -v pm2 >/dev/null 2>&1 || npm i -g pm2\"",
 
-                "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && pm2 start src/server.js --name ite501-api --update-env || pm2 restart ite501-api --update-env\"",
+                "sudo pkill -f node || true",
+                "sudo -u ec2-user bash -lc \"pm2 delete ite501-api || true\"",
+
+                "sudo -u ec2-user bash -lc \"cd /home/ec2-user/app && pm2 start src/server.js --name ite501-api\"",
 
                 "sudo -u ec2-user bash -lc \"pm2 save\""
               ]
             }'
+
 
