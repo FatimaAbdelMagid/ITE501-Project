@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ITE501 API Tester (Students/Employees)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin: 12px 0; }
+    .card h2 { margin: 0 0 10px; font-size: 18px; }
+    label { display: block; font-weight: 600; margin: 8px 0 4px; }
+    input, select, textarea, button { padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+    input, select, textarea { width: min(520px, 100%); }
+    textarea { min-height: 110px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    button { cursor: pointer; border: 1px solid #333; background: #111; color: #fff; }
+    button.secondary { background: #fff; color: #111; }
+    .small { color: #555; font-size: 13px; }
+    pre { background: #0b1020; color: #e6e6e6; padding: 12px; border-radius: 10px; overflow: auto; }
+    .status { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>ITE501 API Tester</h1>
+  <p class="small">
+    Fatima Abdelmagid & Nayla Alshamsi 
+  </p>
+
+  <div class="card">
+    <h2>Connection</h2>
+
+    <label for="baseUrl">Base URL (your API)</label>
+    <input id="baseUrl" placeholder="https://your-alb-domain.com" value="http://localhost:3000" />
+
+    <label for="apiKey">API Key (sent as x-api-key)</label>
+    <input id="apiKey" placeholder="changeme-ite501" value="changeme-ite501" />
+
+    <div class="row" style="margin-top: 10px;">
+      <button type="button" onclick="health()">GET /health</button>
+      <button class="secondary" onclick="clearOutput()">Clear Output</button>
+    </div>
+  </div>
+  <div class="card">
+  <h2>Output</h2>
+  <div class="small">Status: <span class="status" id="status">—</span></div>
+  <pre id="output">{}</pre>
+</div>
+
+
+  <div class="card">
+    <h2>Quick Request Builder</h2>
+
+    <label for="method">Method</label>
+    <select id="method">
+      <option>GET</option>
+      <option>POST</option>
+      <option>PUT</option>
+      <option>DELETE</option>
+    </select>
+
+    <label for="path">Path</label>
+    <input id="path" placeholder="/api/students" value="/api/students" />
+
+    <label for="body">JSON Body (for POST/PUT)</label>
+    <textarea id="body" spellcheck="false">{"name":"Aisha","email":"aisha@adu.ac.ae","major":"Cloud Computing"}</textarea>
+
+    <div class="row" style="margin-top: 10px;">
+      <button onclick="sendCustom()">Send</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Students</h2>
+    <div class="row">
+      <button onclick="listItems('students')">GET /api/students</button>
+      <button onclick="createStudent()">POST /api/students</button>
+      <button onclick="updateStudent()">PUT /api/students/:id</button>
+      <button onclick="deleteItem('students')">DELETE /api/students/:id</button>
+    </div>
+
+    <label for="studentId">Student ID (for get/update/delete)</label>
+    <input id="studentId" placeholder="e.g. 1" />
+
+    <div class="row" style="margin-top: 8px;">
+      <button class="secondary" onclick="getById('students')">GET /api/students/:id</button>
+    </div>
+
+    <label for="studentPayload">Student JSON (POST/PUT)</label>
+    <textarea id="studentPayload" spellcheck="false">
+{"name":"Aisha","email":"aisha@adu.ac.ae","major":"Cloud Computing"}
+    </textarea>
+  </div>
+
+  <div class="card">
+    <h2>Employees</h2>
+    <div class="row">
+      <button onclick="listItems('employees')">GET /api/employees</button>
+      <button onclick="createEmployee()">POST /api/employees</button>
+      <button onclick="updateEmployee()">PUT /api/employees/:id</button>
+      <button onclick="deleteItem('employees')">DELETE /api/employees/:id</button>
+    </div>
+
+    <label for="employeeId">Employee ID (for get/update/delete)</label>
+    <input id="employeeId" placeholder="e.g. 1" />
+
+    <div class="row" style="margin-top: 8px;">
+      <button class="secondary" onclick="getById('employees')">GET /api/employees/:id</button>
+    </div>
+
+    <label for="employeePayload">Employee JSON (POST/PUT)</label>
+    <textarea id="employeePayload" spellcheck="false">
+{"name":"Omar","email":"omar@adu.ac.ae","department":"IT"}
+    </textarea>
+  </div>
+
+
+
+<script>
+  function getConfig() {
+    const baseUrl = document.getElementById('baseUrl').value.trim().replace(/\/+$/, "");
+    const apiKey = document.getElementById('apiKey').value.trim();
+    return { baseUrl, apiKey };
+  }
+
+  async function apiFetch(path, { method="GET", body=null } = {}) {
+    const { baseUrl, apiKey } = getConfig();
+    const url = baseUrl + path;
+
+    const headers = {
+      "x-api-key": apiKey,
+      "Accept": "application/json"
+    };
+
+    const opts = { method, headers };
+
+    if (body !== null && method !== "GET" && method !== "DELETE") {
+      headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(body);
+    }
+
+    try {
+      const res = await fetch(url, opts);
+      const text = await res.text(); // handles JSON or plain text
+      let data;
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+
+      setOutput(res.status, data);
+      return { status: res.status, data };
+    } catch (err) {
+      setOutput("NETWORK ERROR", String(err));
+      return { status: "NETWORK ERROR", data: String(err) };
+    }
+  }
+
+  function setOutput(status, data) {
+  const statusEl = document.getElementById('status');
+  const outputEl = document.getElementById('output');
+
+  // If the Output section is missing, show an alert so it's obvious
+  if (!statusEl || !outputEl) {
+    alert("Output area not found. Please add elements with id='status' and id='output'.");
+    return;
+  }
+
+  statusEl.textContent = status;
+  outputEl.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+}
+
+
+  function clearOutput() {
+    setOutput("—", {});
+  }
+
+  // ---- Health ----
+  function health() {
+    return apiFetch("/health", { method: "GET" });
+  }
+
+  // ---- Generic helpers ----
+  function listItems(type) {
+    return apiFetch(`/api/${type}`, { method: "GET" });
+  }
+
+  function getById(type) {
+    const id = (type === "students")
+      ? document.getElementById("studentId").value.trim()
+      : document.getElementById("employeeId").value.trim();
+
+    if (!id) return setOutput("INPUT", `Please enter ${type.slice(0, -1)} id first.`);
+    return apiFetch(`/api/${type}/${encodeURIComponent(id)}`, { method: "GET" });
+  }
+
+  function deleteItem(type) {
+    const id = (type === "students")
+      ? document.getElementById("studentId").value.trim()
+      : document.getElementById("employeeId").value.trim();
+
+    if (!id) return setOutput("INPUT", `Please enter ${type.slice(0, -1)} id first.`);
+    return apiFetch(`/api/${type}/${encodeURIComponent(id)}`, { method: "DELETE" });
+  }
+
+  // ---- Students CRUD ----
+  function createStudent() {
+    const raw = document.getElementById("studentPayload").value.trim();
+    let body;
+    try { body = JSON.parse(raw); }
+    catch { return setOutput("JSON ERROR", "Student JSON is invalid."); }
+
+    return apiFetch("/api/students", { method: "POST", body });
+  }
+
+  function updateStudent() {
+    const id = document.getElementById("studentId").value.trim();
+    if (!id) return setOutput("INPUT", "Please enter student id first.");
+
+    const raw = document.getElementById("studentPayload").value.trim();
+    let body;
+    try { body = JSON.parse(raw); }
+    catch { return setOutput("JSON ERROR", "Student JSON is invalid."); }
+
+    return apiFetch(`/api/students/${encodeURIComponent(id)}`, { method: "PUT", body });
+  }
+
+  // ---- Employees CRUD ----
+  function createEmployee() {
+    const raw = document.getElementById("employeePayload").value.trim();
+    let body;
+    try { body = JSON.parse(raw); }
+    catch { return setOutput("JSON ERROR", "Employee JSON is invalid."); }
+
+    return apiFetch("/api/employees", { method: "POST", body });
+  }
+
+  function updateEmployee() {
+    const id = document.getElementById("employeeId").value.trim();
+    if (!id) return setOutput("INPUT", "Please enter employee id first.");
+
+    const raw = document.getElementById("employeePayload").value.trim();
+    let body;
+    try { body = JSON.parse(raw); }
+    catch { return setOutput("JSON ERROR", "Employee JSON is invalid."); }
+
+    return apiFetch(`/api/employees/${encodeURIComponent(id)}`, { method: "PUT", body });
+  }
+
+  // ---- Custom request ----
+  function sendCustom() {
+    const method = document.getElementById("method").value;
+    let path = document.getElementById("path").value.trim();
+    if (!path.startsWith("/")) path = "/" + path;
+
+    const raw = document.getElementById("body").value.trim();
+    let body = null;
+
+    if (method !== "GET" && method !== "DELETE") {
+      if (!raw) return setOutput("INPUT", "Body is required for POST/PUT.");
+      try { body = JSON.parse(raw); }
+      catch { return setOutput("JSON ERROR", "Custom JSON body is invalid."); }
+    }
+
+    return apiFetch(path, { method, body });
+  }
+ window.addEventListener("load", () => {
+  setOutput("READY", { message: "Page loaded and JS can update Output" });
+});
+
+</script>
+</body>
+</html>

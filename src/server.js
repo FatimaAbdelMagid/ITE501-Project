@@ -2,12 +2,18 @@ require("dotenv").config();
 
 const express = require("express");
 const morgan = require("morgan");
+const path = require("path");
+
 
 const { requireApiKey } = require("./middleware/auth");
 const studentRoutes = require("./routes/students");
 const employeeRoutes = require("./routes/employees");
 
 const app = express();
+// Serve frontend
+app.use(express.static(path.join(__dirname, "..", "public")));
+
+
 
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("combined"));
